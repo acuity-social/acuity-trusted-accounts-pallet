@@ -19,6 +19,19 @@ pub mod pallet {
 	use frame_support::pallet_prelude::*;
 	use frame_system::pallet_prelude::*;
 
+	#[derive(Encode, Decode, Clone, PartialEq, TypeInfo, MaxEncodedLen)]
+    pub struct Account<AccountId> {
+        pub account_id: Option<AccountId>,
+    }
+
+	impl<AccountId> Default for Account<AccountId> {
+	    fn default() -> Account<AccountId> {
+			Self {
+				account_id: None
+			}
+		}
+	}
+
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
@@ -30,13 +43,15 @@ pub mod pallet {
 	#[pallet::generate_store(pub(super) trait Store)]
 	pub struct Pallet<T>(_);
 
-	// The pallet's runtime storage items.
-	// https://docs.substrate.io/v3/runtime/storage
 	#[pallet::storage]
-	#[pallet::getter(fn something)]
-	// Learn more about declaring storage items:
-	// https://docs.substrate.io/v3/runtime/storage#declaring-storage-items
-	pub type Something<T> = StorageValue<_, u32>;
+	#[pallet::getter(fn account_trusted_account_list)]
+	// Mapping of account to array of trusted accounts.
+	pub type AccountTrustedAccountList<T: Config> = StorageDoubleMap<_, Blake2_128Concat, T::AccountId, Blake2_128Concat, u32, Account<T::AccountId>, ValueQuery>;
+
+	#[pallet::storage]
+	#[pallet::getter(fn account_trusted_account_index)]
+	// Mapping of account1 to mapping of account2 to index + 1 in accountTrustedAccountList.
+	pub type AccountTrustedAccountIndex<T: Config> = StorageDoubleMap<_, Blake2_128Concat, T::AccountId, Blake2_128Concat, T::AccountId, u32, ValueQuery>;
 
 	// Pallets use events to inform users when important changes are made.
 	// https://docs.substrate.io/v3/runtime/events-and-errors
@@ -62,6 +77,8 @@ pub mod pallet {
 	// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
+
+/*
 		/// An example dispatchable that takes a singles value as a parameter, writes the value to
 		/// storage and emits an event. This function must be dispatched by a signed extrinsic.
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
@@ -98,5 +115,7 @@ pub mod pallet {
 				},
 			}
 		}
+*/
+
 	}
 }
