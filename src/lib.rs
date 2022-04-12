@@ -44,14 +44,30 @@ pub mod pallet {
 	pub struct Pallet<T>(_);
 
 	#[pallet::storage]
+	#[pallet::getter(fn account_trusted_account_list_count)]
+	// Mapping of account to count of accounts that it trusts.
+	pub type AccountTrustedAccountListCount<T: Config> = StorageMap<_,
+		Blake2_128Concat, T::AccountId,
+		u32,
+		ValueQuery>;
+
+	#[pallet::storage]
 	#[pallet::getter(fn account_trusted_account_list)]
 	// Mapping of account to array of trusted accounts.
-	pub type AccountTrustedAccountList<T: Config> = StorageDoubleMap<_, Blake2_128Concat, T::AccountId, Blake2_128Concat, u32, Account<T::AccountId>, ValueQuery>;
+	pub type AccountTrustedAccountList<T: Config> = StorageDoubleMap<_,
+		Blake2_128Concat, T::AccountId,
+		Blake2_128Concat, u32,
+		Account<T::AccountId>,
+		ValueQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn account_trusted_account_index)]
 	// Mapping of account1 to mapping of account2 to index + 1 in accountTrustedAccountList.
-	pub type AccountTrustedAccountIndex<T: Config> = StorageDoubleMap<_, Blake2_128Concat, T::AccountId, Blake2_128Concat, T::AccountId, u32, ValueQuery>;
+	pub type AccountTrustedAccountIndex<T: Config> = StorageDoubleMap<_,
+		Blake2_128Concat, T::AccountId,
+		Blake2_128Concat, T::AccountId,
+		u32,
+		ValueQuery>;
 
 	// Pallets use events to inform users when important changes are made.
 	// https://docs.substrate.io/v3/runtime/events-and-errors
@@ -66,10 +82,12 @@ pub mod pallet {
 	// Errors inform users that something went wrong.
 	#[pallet::error]
 	pub enum Error<T> {
-		/// Error names should be descriptive.
-		NoneValue,
-		/// Errors should have helpful documentation associated with them.
-		StorageOverflow,
+		/// It is not possible to trust self
+		TrustSelf,
+		/// The account is already trusted.
+		AlreadyTrusted,
+		/// The account is not trusted.
+		NotTrusted,
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -78,44 +96,64 @@ pub mod pallet {
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
 
-/*
-		/// An example dispatchable that takes a singles value as a parameter, writes the value to
-		/// storage and emits an event. This function must be dispatched by a signed extrinsic.
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
-		pub fn do_something(origin: OriginFor<T>, something: u32) -> DispatchResult {
+		pub fn trust_account(origin: OriginFor<T>, account: T::AccountId) -> DispatchResult {
 			// Check that the extrinsic was signed and get the signer.
 			// This function will return an error if the extrinsic is not signed.
 			// https://docs.substrate.io/v3/runtime/origins
-			let who = ensure_signed(origin)?;
+			let sender = ensure_signed(origin)?;
+			// Check that the sender is not attempting to trust themselves.
+			if sender == account {
+				Err(Error::<T>::TrustSelf)?;
+			}
+			// Check that the account is not already trusted.
+			if <AccountTrustedAccountIndex<T>>::get(&sender, &account) != 0 {
+				Err(Error::<T>::AlreadyTrusted)?;
+			}
+			let list_length = <AccountTrustedAccountListCount<T>>::get(&sender);
 
-			// Update storage.
-			<Something<T>>::put(something);
+			//----------------------------------------
 
-			// Emit an event.
-			Self::deposit_event(Event::SomethingStored(something, who));
+			<AccountTrustedAccountList<T>>::insert(&sender, list_length, Account::<T::AccountId> {
+				account_id: Some(account.clone())
+			});
+			<AccountTrustedAccountListCount<T>>::insert(&sender, list_length + 1);
+			<AccountTrustedAccountIndex<T>>::insert(&sender, &account, list_length + 1);
 			// Return a successful DispatchResultWithPostInfo
 			Ok(())
 		}
 
-		/// An example dispatchable that may throw a custom error.
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
-		pub fn cause_error(origin: OriginFor<T>) -> DispatchResult {
-			let _who = ensure_signed(origin)?;
-
-			// Read a value from storage.
-			match <Something<T>>::get() {
-				// Return an error if the value has not been set.
-				None => Err(Error::<T>::NoneValue)?,
-				Some(old) => {
-					// Increment the value read from storage; will error in the event of overflow.
-					let new = old.checked_add(1).ok_or(Error::<T>::StorageOverflow)?;
-					// Update the value in storage with the incremented result.
-					<Something<T>>::put(new);
-					Ok(())
-				},
+		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
+		pub fn untrust_account(origin: OriginFor<T>, account: T::AccountId) -> DispatchResult {
+			// Check that the extrinsic was signed and get the signer.
+			// This function will return an error if the extrinsic is not signed.
+			// https://docs.substrate.io/v3/runtime/origins
+			let sender = ensure_signed(origin)?;
+			// Get the index + 1 of the account to be removed
+			let i = <AccountTrustedAccountIndex<T>>::get(&sender, &account);
+			// Check the account is trusted.
+			if i == 0 {
+				Err(Error::<T>::NotTrusted)?;
 			}
+
+			//----------------------------------------
+
+			// Delete the index from state.
+			<AccountTrustedAccountIndex<T>>::remove(&sender, &account);
+			// Get the list length.
+			let list_length = <AccountTrustedAccountListCount<T>>::get(&sender);
+			// Check if this is not the last account.
+			if i == list_length {
+				let moving_account = <AccountTrustedAccountList<T>>::get(&sender, list_length);
+				<AccountTrustedAccountList<T>>::insert(&sender, i - 1, moving_account);
+				<AccountTrustedAccountIndex<T>>::insert(&sender, &account, i);
+			}
+			// Remove the last account.
+			<AccountTrustedAccountList<T>>::remove(&sender, &list_length - 1);
+			<AccountTrustedAccountListCount<T>>::insert(&sender, &list_length);
+			// Return a successful DispatchResultWithPostInfo
+			Ok(())
 		}
-*/
 
 	}
 }
