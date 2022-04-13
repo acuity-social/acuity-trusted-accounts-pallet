@@ -110,15 +110,19 @@ pub mod pallet {
 			if <AccountTrustedAccountIndex<T>>::get(&sender, &account) != 0 {
 				Err(Error::<T>::AlreadyTrusted)?;
 			}
-			let list_length = <AccountTrustedAccountListCount<T>>::get(&sender);
+			// Get the total number of accounts the sender already trusts.
+			let count = <AccountTrustedAccountListCount<T>>::get(&sender);
 
 			//----------------------------------------
 
-			<AccountTrustedAccountList<T>>::insert(&sender, list_length, Account::<T::AccountId> {
+			// Insert the new account at the end of the list.
+			<AccountTrustedAccountList<T>>::insert(&sender, count, Account::<T::AccountId> {
 				account_id: Some(account.clone())
 			});
-			<AccountTrustedAccountListCount<T>>::insert(&sender, list_length + 1);
-			<AccountTrustedAccountIndex<T>>::insert(&sender, &account, list_length + 1);
+			// Update the size of the list.
+			<AccountTrustedAccountListCount<T>>::insert(&sender, count + 1);
+			// Store index + 1 for this trust pair.
+			<AccountTrustedAccountIndex<T>>::insert(&sender, &account, count + 1);
 			// Return a successful DispatchResultWithPostInfo
 			Ok(())
 		}
@@ -141,16 +145,19 @@ pub mod pallet {
 			// Delete the index from state.
 			<AccountTrustedAccountIndex<T>>::remove(&sender, &account);
 			// Get the list length.
-			let list_length = <AccountTrustedAccountListCount<T>>::get(&sender);
+			let count = <AccountTrustedAccountListCount<T>>::get(&sender);
 			// Check if this is not the last account.
-			if i == list_length {
-				let moving_account = <AccountTrustedAccountList<T>>::get(&sender, list_length);
-				<AccountTrustedAccountList<T>>::insert(&sender, i - 1, moving_account);
-				<AccountTrustedAccountIndex<T>>::insert(&sender, &account, i);
+			if i != count {
+				// Get the last account.
+				let moving_account = <AccountTrustedAccountList<T>>::get(&sender, count - 1);
+				// Overwrite the account being untrusted with the last account.
+				<AccountTrustedAccountList<T>>::insert(&sender, i - 1, &moving_account);
+				// Update the index + 1 of the last account.
+				<AccountTrustedAccountIndex<T>>::insert(&sender, moving_account.account_id.unwrap(), i);
 			}
 			// Remove the last account.
-			<AccountTrustedAccountList<T>>::remove(&sender, &list_length - 1);
-			<AccountTrustedAccountListCount<T>>::insert(&sender, &list_length);
+			<AccountTrustedAccountList<T>>::remove(&sender, count - 1);
+			<AccountTrustedAccountListCount<T>>::insert(&sender, count - 1);
 			// Return a successful DispatchResultWithPostInfo
 			Ok(())
 		}
