@@ -1,18 +1,6 @@
 use crate::{mock::*, Error};
 use frame_support::{assert_noop, assert_ok};
 
-/*
-#[test]
-fn it_works_for_default_value() {
-	new_test_ext().execute_with(|| {
-		// Dispatch a signed extrinsic.
-		assert_ok!(TemplateModule::do_something(Origin::signed(1), 42));
-		// Read pallet storage and assert an expected result.
-		assert_eq!(TemplateModule::something(), Some(42));
-	});
-}
-*/
-
 #[test]
 fn trust_account_cant_trust_self_control() {
 	new_test_ext().execute_with(|| {
@@ -30,7 +18,7 @@ fn trust_account_cant_trust_self() {
 #[test]
 fn trust_account_already_trusted_control() {
 	new_test_ext().execute_with(|| {
-		TemplateModule::trust_account(Origin::signed(1), 2);
+		assert_ok!(TemplateModule::trust_account(Origin::signed(1), 2));
 		assert_ok!(TemplateModule::trust_account(Origin::signed(1), 3));
 	});
 }
@@ -38,7 +26,76 @@ fn trust_account_already_trusted_control() {
 #[test]
 fn trust_account_already_trusted() {
 	new_test_ext().execute_with(|| {
-		TemplateModule::trust_account(Origin::signed(1), 2);
+		assert_ok!(TemplateModule::trust_account(Origin::signed(1), 2));
 		assert_noop!(TemplateModule::trust_account(Origin::signed(1), 2), Error::<Test>::AlreadyTrusted);
+	});
+}
+
+#[test]
+fn trust_account() {
+	new_test_ext().execute_with(|| {
+		assert_eq!(TemplateModule::account_trusted_account_list_count(1), 0);
+
+		assert_ok!(TemplateModule::trust_account(Origin::signed(1), 2));
+		assert_eq!(TemplateModule::account_trusted_account_list_count(1), 1);
+		let i = TemplateModule::account_trusted_account_index(1, 2) - 1;
+		assert_eq!(TemplateModule::account_trusted_account_list(1, i).account_id.unwrap(), 2);
+
+		assert_ok!(TemplateModule::trust_account(Origin::signed(1), 3));
+		assert_eq!(TemplateModule::account_trusted_account_list_count(1), 2);
+		let i = TemplateModule::account_trusted_account_index(1, 3) - 1;
+		assert_eq!(TemplateModule::account_trusted_account_list(1, i).account_id.unwrap(), 3);
+
+		assert_ok!(TemplateModule::trust_account(Origin::signed(1), 4));
+		assert_eq!(TemplateModule::account_trusted_account_list_count(1), 3);
+		let i = TemplateModule::account_trusted_account_index(1, 4) - 1;
+		assert_eq!(TemplateModule::account_trusted_account_list(1, i).account_id.unwrap(), 4);
+
+		assert_ok!(TemplateModule::trust_account(Origin::signed(1), 5));
+		assert_eq!(TemplateModule::account_trusted_account_list_count(1), 4);
+		let i = TemplateModule::account_trusted_account_index(1, 5) - 1;
+		assert_eq!(TemplateModule::account_trusted_account_list(1, i).account_id.unwrap(), 5);
+	});
+}
+
+#[test]
+fn untrust_account_not_trusted_control() {
+	new_test_ext().execute_with(|| {
+		assert_ok!(TemplateModule::trust_account(Origin::signed(1), 2));
+		assert_ok!(TemplateModule::untrust_account(Origin::signed(1), 2));
+	});
+}
+
+#[test]
+fn untrust_account_not_trusted() {
+	new_test_ext().execute_with(|| {
+		assert_noop!(TemplateModule::untrust_account(Origin::signed(1), 2), Error::<Test>::NotTrusted);
+	});
+}
+
+#[test]
+fn untrust_account() {
+	new_test_ext().execute_with(|| {
+		assert_ok!(TemplateModule::trust_account(Origin::signed(1), 2));
+		assert_ok!(TemplateModule::trust_account(Origin::signed(1), 3));
+		assert_ok!(TemplateModule::trust_account(Origin::signed(1), 4));
+		assert_ok!(TemplateModule::trust_account(Origin::signed(1), 5));
+		assert_eq!(TemplateModule::account_trusted_account_list_count(1), 4);
+
+		assert_ok!(TemplateModule::untrust_account(Origin::signed(1), 3));
+		assert_eq!(TemplateModule::account_trusted_account_list_count(1), 3);
+		assert_eq!(TemplateModule::account_trusted_account_index(1, 3), 0);
+
+		assert_ok!(TemplateModule::untrust_account(Origin::signed(1), 5));
+		assert_eq!(TemplateModule::account_trusted_account_list_count(1), 2);
+		assert_eq!(TemplateModule::account_trusted_account_index(1, 5), 0);
+
+		assert_ok!(TemplateModule::untrust_account(Origin::signed(1), 2));
+		assert_eq!(TemplateModule::account_trusted_account_list_count(1), 1);
+		assert_eq!(TemplateModule::account_trusted_account_index(1, 2), 0);
+
+		assert_ok!(TemplateModule::untrust_account(Origin::signed(1), 4));
+		assert_eq!(TemplateModule::account_trusted_account_list_count(1), 0);
+		assert_eq!(TemplateModule::account_trusted_account_index(1, 4), 0);
 	});
 }
