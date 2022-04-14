@@ -74,9 +74,10 @@ pub mod pallet {
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-		/// Event documentation should end with an array that provides descriptive names for event
-		/// parameters. [something, who]
-		SomethingStored(u32, T::AccountId),
+		/// An account has trusted another. [truster, trustee]
+		AccountTrusted(T::AccountId, T::AccountId),
+		/// An account has untrusted another. [truster, trustee]
+		AccountUntrusted(T::AccountId, T::AccountId),
 	}
 
 	// Errors inform users that something went wrong.
@@ -123,6 +124,8 @@ pub mod pallet {
 			<AccountTrustedAccountListCount<T>>::insert(&sender, count + 1);
 			// Store index + 1 for this trust pair.
 			<AccountTrustedAccountIndex<T>>::insert(&sender, &account, count + 1);
+			// Emit the event.
+			Self::deposit_event(Event::AccountTrusted(sender, account));
 			// Return a successful DispatchResultWithPostInfo
 			Ok(())
 		}
@@ -158,6 +161,8 @@ pub mod pallet {
 			// Remove the last account.
 			<AccountTrustedAccountList<T>>::remove(&sender, count - 1);
 			<AccountTrustedAccountListCount<T>>::insert(&sender, count - 1);
+			// Emit the event.
+			Self::deposit_event(Event::AccountUntrusted(sender, account));
 			// Return a successful DispatchResultWithPostInfo
 			Ok(())
 		}
