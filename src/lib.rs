@@ -170,6 +170,7 @@ pub mod pallet {
 	}
 
 	impl<T: Config> Pallet<T> {
+		#[cfg(any(feature = "std"))]
 		pub fn trusted(account: T::AccountId) -> Vec<T::AccountId> {
 			let mut accounts = Vec::new();
 			let count = AccountTrustedAccountListCount::<T>::get(&account);
@@ -210,6 +211,7 @@ pub mod pallet {
 			Self::is_trusted_only_deep(account, trustee)
 		}
 
+		#[cfg(any(feature = "std"))]
 		pub fn trusted_that_trust(account: T::AccountId, account_is_trusted_by_trusted: T::AccountId) -> Vec<T::AccountId> {
 			let mut accounts_trusted_that_trust = Vec::new();
 			let accounts_trusted = Self::trusted(account);
