@@ -1,0 +1,20 @@
+[package]
+name = "pallet-acuity-trusted-accounts-rpc-runtime-api"
+version = "0.1.0"
+description = "FRAME pallet for trusted accounts."
+authors = ["Jonathan Brown <jbrown@acuity.social>"]
+homepage = "https://acuity.social/"
+edition = "2021"
+license = "Apache-2.0"
+publish = false
+
+[dependencies]
+sp-api = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.19" }
+codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false }
+
+[features]
+default = ["std"]
+std = [
+	"sp-api/std",
+	"codec/std",
+]
