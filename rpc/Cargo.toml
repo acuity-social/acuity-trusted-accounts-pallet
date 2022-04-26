@@ -1,0 +1,26 @@
+[package]
+name = "pallet-acuity-trusted-accounts-rpc"
+version = "0.1.0"
+authors = ["Jonathan Brown <jbrown@acuity.social>"]
+edition = "2021"
+license = "Apache-2.0"
+homepage = "https://acuity.social/"
+repository = "https://github.com/acuity-social/acuity-trusted-accounts-pallet"
+description = "RPC interface for the trusted accounts pallet."
+readme = "README.md"
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu"]
+
+[dependencies]
+codec = { package = "parity-scale-codec", version = "3.0.0" }
+jsonrpc-core = "18.0.0"
+jsonrpc-core-client = "18.0.0"
+jsonrpc-derive = "18.0.0"
+
+sp-api = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.19" }
+sp-blockchain = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.19" }
+sp-core = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.19" }
+sp-rpc = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.19" }
+sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.19" }
+pallet-acuity-trusted-accounts-rpc-runtime-api = { path = "./runtime-api" }

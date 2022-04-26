@@ -1,12 +1,13 @@
 [package]
 name = "pallet-acuity-trusted-accounts-rpc-runtime-api"
 version = "0.1.0"
-description = "FRAME pallet for trusted accounts."
+description = "RPC runtime API for trusted accounts FRAME pallet"
 authors = ["Jonathan Brown <jbrown@acuity.social>"]
 homepage = "https://acuity.social/"
 edition = "2021"
 license = "Apache-2.0"
 publish = false
+repository = "https://github.com/acuity-social/acuity-trusted-accounts-pallet"
 
 [package.metadata.docs.rs]
 targets = ["x86_64-unknown-linux-gnu"]
