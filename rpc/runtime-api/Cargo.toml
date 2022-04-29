@@ -21,5 +21,6 @@ codec = { package = "parity-scale-codec", version = "3.0.0", default-features = 
 default = ["std"]
 std = [
 	"sp-api/std",
+	"sp-std/std",
 	"codec/std",
 ]
