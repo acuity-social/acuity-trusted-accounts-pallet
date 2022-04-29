@@ -5,9 +5,6 @@
 /// <https://docs.substrate.io/v3/runtime/frame>
 pub use pallet::*;
 
-#[cfg(not(feature = "std"))]
-use sp_std::prelude::Vec;
-
 #[cfg(test)]
 mod mock;
 
@@ -199,8 +196,8 @@ pub mod pallet {
 			Self::is_trusted_only_deep(account, trustee)
 		}
 
-		pub fn trusted_by(account: T::AccountId) -> Vec<T::AccountId> {
-			let mut accounts = Vec::new();
+		pub fn trusted_by(account: T::AccountId) -> sp_std::prelude::Vec<T::AccountId> {
+			let mut accounts = sp_std::prelude::Vec::new();
 			let count = AccountTrustedAccountListCount::<T>::get(&account);
 
 			let mut i = 0;
@@ -212,8 +209,8 @@ pub mod pallet {
 			accounts
 		}
 
-		pub fn trusted_by_that_trust(account: T::AccountId, account_is_trusted_by_trusted: T::AccountId) -> Vec<T::AccountId> {
-			let mut accounts_trusted_that_trust = Vec::new();
+		pub fn trusted_by_that_trust(account: T::AccountId, account_is_trusted_by_trusted: T::AccountId) -> sp_std::prelude::Vec<T::AccountId> {
+			let mut accounts_trusted_that_trust = sp_std::prelude::Vec::new();
 			let accounts_trusted = Self::trusted_by(account);
 
 			for account_trusted in accounts_trusted {
