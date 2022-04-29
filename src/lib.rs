@@ -4,7 +4,9 @@
 /// Learn more about FRAME and the core library of Substrate FRAME pallets:
 /// <https://docs.substrate.io/v3/runtime/frame>
 pub use pallet::*;
-use sp_std::vec::Vec;
+
+#[cfg(not(feature = "std"))]
+use sp_std::prelude::Vec;
 
 #[cfg(test)]
 mod mock;
