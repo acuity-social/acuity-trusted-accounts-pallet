@@ -16,6 +16,18 @@ pub use pallet_acuity_trusted_accounts_rpc_runtime_api::TrustedAccountsApi as Tr
 pub trait TrustedAccountsApi<AccountId, BlockHash> {
 	#[rpc(name = "trustedAccounts_isTrusted")]
 	fn is_trusted(&self, account: AccountId, trustee: AccountId, at: Option<BlockHash>) -> Result<bool>;
+
+	#[rpc(name = "trustedAccounts_isTrustedOnlyDeep")]
+	fn is_trusted_only_deep(&self, account: AccountId, trustee: AccountId, at: Option<BlockHash>) -> Result<bool>;
+
+	#[rpc(name = "trustedAccounts_isTrustedDeep")]
+	fn is_trusted_deep(&self, account: AccountId, trustee: AccountId, at: Option<BlockHash>) -> Result<bool>;
+
+	#[rpc(name = "trustedAccounts_trustedBy")]
+	fn trusted_by(&self, account: AccountId, at: Option<BlockHash>) -> Result<Vec<AccountId>>;
+
+	#[rpc(name = "trustedAccounts_trustedByThatTrust")]
+	fn trusted_by_that_trust(&self, account: AccountId, account_is_trusted_by_trusted: AccountId, at: Option<BlockHash>) -> Result<Vec<AccountId>>;
 }
 
 pub struct TrustedAccounts<C, P> {
@@ -53,6 +65,85 @@ where
         ));
 
     	api.is_trusted(&at, account, trustee).map_err(|e| Error {
+    		code: ErrorCode::ServerError(1234),
+    		message: "Unable to query dispatch info.".into(),
+    		data: Some(e.to_string().into()),
+    	})
+	}
+
+	fn is_trusted_only_deep(
+        &self,
+        account: AccountId,
+        trustee: AccountId,
+        at: Option<<Block as BlockT>::Hash>,
+    ) -> Result<bool> {
+
+    	let api = self.client.runtime_api();
+        let at = BlockId::hash(at.unwrap_or_else(||
+            // If the block hash is not supplied assume the best block.
+            self.client.info().best_hash
+        ));
+
+    	api.is_trusted_only_deep(&at, account, trustee).map_err(|e| Error {
+    		code: ErrorCode::ServerError(1234),
+    		message: "Unable to query dispatch info.".into(),
+    		data: Some(e.to_string().into()),
+    	})
+	}
+
+	fn is_trusted_deep(
+        &self,
+        account: AccountId,
+        trustee: AccountId,
+        at: Option<<Block as BlockT>::Hash>,
+    ) -> Result<bool> {
+
+    	let api = self.client.runtime_api();
+        let at = BlockId::hash(at.unwrap_or_else(||
+            // If the block hash is not supplied assume the best block.
+            self.client.info().best_hash
+        ));
+
+    	api.is_trusted_deep(&at, account, trustee).map_err(|e| Error {
+    		code: ErrorCode::ServerError(1234),
+    		message: "Unable to query dispatch info.".into(),
+    		data: Some(e.to_string().into()),
+    	})
+	}
+
+	fn trusted_by(
+        &self,
+        account: AccountId,
+        at: Option<<Block as BlockT>::Hash>,
+    ) -> Result<Vec<AccountId>> {
+
+    	let api = self.client.runtime_api();
+        let at = BlockId::hash(at.unwrap_or_else(||
+            // If the block hash is not supplied assume the best block.
+            self.client.info().best_hash
+        ));
+
+    	api.trusted_by(&at, account).map_err(|e| Error {
+    		code: ErrorCode::ServerError(1234),
+    		message: "Unable to query dispatch info.".into(),
+    		data: Some(e.to_string().into()),
+    	})
+	}
+
+	fn trusted_by_that_trust(
+        &self,
+        account: AccountId,
+        account_is_trusted_by_trusted: AccountId,
+        at: Option<<Block as BlockT>::Hash>,
+    ) -> Result<Vec<AccountId>> {
+
+    	let api = self.client.runtime_api();
+        let at = BlockId::hash(at.unwrap_or_else(||
+            // If the block hash is not supplied assume the best block.
+            self.client.info().best_hash
+        ));
+
+    	api.trusted_by_that_trust(&at, account, account_is_trusted_by_trusted).map_err(|e| Error {
     		code: ErrorCode::ServerError(1234),
     		message: "Unable to query dispatch info.".into(),
     		data: Some(e.to_string().into()),

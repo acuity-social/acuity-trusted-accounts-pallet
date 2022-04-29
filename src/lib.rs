@@ -169,20 +169,6 @@ pub mod pallet {
 	}
 
 	impl<T: Config> Pallet<T> {
-		#[cfg(any(feature = "std"))]
-		pub fn trusted(account: T::AccountId) -> Vec<T::AccountId> {
-			let mut accounts = Vec::new();
-			let count = AccountTrustedAccountListCount::<T>::get(&account);
-
-			let mut i = 0;
-			while i < count {
-				accounts.push(AccountTrustedAccountList::<T>::get(&account, i).account_id.unwrap());
-				i = i + 1;
-			}
-
-			accounts
-		}
-
 		pub fn is_trusted(account: T::AccountId, trustee: T::AccountId) -> bool {
 			AccountTrustedAccountIndex::<T>::get(&account, &trustee) != 0
 		}
@@ -211,9 +197,23 @@ pub mod pallet {
 		}
 
 		#[cfg(any(feature = "std"))]
-		pub fn trusted_that_trust(account: T::AccountId, account_is_trusted_by_trusted: T::AccountId) -> Vec<T::AccountId> {
+		pub fn trusted_by(account: T::AccountId) -> Vec<T::AccountId> {
+			let mut accounts = Vec::new();
+			let count = AccountTrustedAccountListCount::<T>::get(&account);
+
+			let mut i = 0;
+			while i < count {
+				accounts.push(AccountTrustedAccountList::<T>::get(&account, i).account_id.unwrap());
+				i = i + 1;
+			}
+
+			accounts
+		}
+
+		#[cfg(any(feature = "std"))]
+		pub fn trusted_by_that_trust(account: T::AccountId, account_is_trusted_by_trusted: T::AccountId) -> Vec<T::AccountId> {
 			let mut accounts_trusted_that_trust = Vec::new();
-			let accounts_trusted = Self::trusted(account);
+			let accounts_trusted = Self::trusted_by(account);
 
 			for account_trusted in accounts_trusted {
 				if Self::is_trusted(account_trusted.clone(), account_is_trusted_by_trusted.clone()) {
