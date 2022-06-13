@@ -4,7 +4,7 @@
 use sp_std::prelude::Vec;
 
 sp_api::decl_runtime_apis! {
-    pub trait TrustedAccountsApi<AccountId> where
+    pub trait TrustedAccountsApiServer<AccountId> where
 		AccountId: codec::Codec,
     {
          fn is_trusted(account: AccountId, trustee: AccountId) -> bool;

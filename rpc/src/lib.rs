@@ -10,10 +10,10 @@ use sp_runtime::{
 
 use std::sync::Arc;
 
-pub use pallet_acuity_trusted_accounts_rpc_runtime_api::TrustedAccountsApi as TrustedAccountsRuntimeApi;
+pub use pallet_acuity_trusted_accounts_rpc_runtime_api::TrustedAccountsApiServer as TrustedAccountsRuntimeApi;
 
 #[rpc]
-pub trait TrustedAccountsApi<AccountId, BlockHash> {
+pub trait TrustedAccountsApiServer<AccountId, BlockHash> {
 	#[rpc(name = "trustedAccounts_isTrusted")]
 	fn is_trusted(&self, account: AccountId, trustee: AccountId, at: Option<BlockHash>) -> Result<bool>;
 
@@ -41,7 +41,7 @@ impl<C, P> TrustedAccounts<C, P> {
 	}
 }
 
-impl<C, AccountId, Block> TrustedAccountsApi<AccountId, <Block as BlockT>::Hash>
+impl<C, AccountId, Block> TrustedAccountsApiServer<AccountId, <Block as BlockT>::Hash>
 	for TrustedAccounts<C, Block>
 where
     AccountId: Codec,
