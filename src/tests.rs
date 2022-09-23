@@ -39,22 +39,22 @@ fn trust_account() {
 		assert_ok!(TemplateModule::trust_account(Origin::signed(1), 2));
 		assert_eq!(TemplateModule::account_trusted_account_list_count(1), 1);
 		let i = TemplateModule::account_trusted_account_index(1, 2).unwrap() - 1;
-		assert_eq!(TemplateModule::account_trusted_account_list(1, i).unwrap().account_id.unwrap(), 2);
+		assert_eq!(TemplateModule::account_trusted_account_list(1, i).unwrap(), 2);
 
 		assert_ok!(TemplateModule::trust_account(Origin::signed(1), 3));
 		assert_eq!(TemplateModule::account_trusted_account_list_count(1), 2);
 		let i = TemplateModule::account_trusted_account_index(1, 3).unwrap() - 1;
-		assert_eq!(TemplateModule::account_trusted_account_list(1, i).unwrap().account_id.unwrap(), 3);
+		assert_eq!(TemplateModule::account_trusted_account_list(1, i).unwrap(), 3);
 
 		assert_ok!(TemplateModule::trust_account(Origin::signed(1), 4));
 		assert_eq!(TemplateModule::account_trusted_account_list_count(1), 3);
 		let i = TemplateModule::account_trusted_account_index(1, 4).unwrap() - 1;
-		assert_eq!(TemplateModule::account_trusted_account_list(1, i).unwrap().account_id.unwrap(), 4);
+		assert_eq!(TemplateModule::account_trusted_account_list(1, i).unwrap(), 4);
 
 		assert_ok!(TemplateModule::trust_account(Origin::signed(1), 5));
 		assert_eq!(TemplateModule::account_trusted_account_list_count(1), 4);
 		let i = TemplateModule::account_trusted_account_index(1, 5).unwrap() - 1;
-		assert_eq!(TemplateModule::account_trusted_account_list(1, i).unwrap().account_id.unwrap(), 5);
+		assert_eq!(TemplateModule::account_trusted_account_list(1, i).unwrap(), 5);
 	});
 }
 

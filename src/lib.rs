@@ -19,19 +19,6 @@ pub mod pallet {
 	use frame_support::pallet_prelude::*;
 	use frame_system::pallet_prelude::*;
 
-	#[derive(Encode, Decode, Clone, PartialEq, TypeInfo, MaxEncodedLen)]
-    pub struct Account<AccountId> {
-        pub account_id: Option<AccountId>,
-    }
-
-	impl<AccountId> Default for Account<AccountId> {
-	    fn default() -> Account<AccountId> {
-			Self {
-				account_id: None
-			}
-		}
-	}
-
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
@@ -58,7 +45,7 @@ pub mod pallet {
 	pub type AccountTrustedAccountList<T: Config> = StorageDoubleMap<_,
 		Blake2_128Concat, T::AccountId,
 		Blake2_128Concat, u32,
-		Account<T::AccountId>,
+		T::AccountId,
 	>;
 
 	#[pallet::storage]
@@ -118,9 +105,7 @@ pub mod pallet {
 			//----------------------------------------
 
 			// Insert the new account at the end of the list.
-			<AccountTrustedAccountList<T>>::insert(&sender, count, Account::<T::AccountId> {
-				account_id: Some(account.clone())
-			});
+			<AccountTrustedAccountList<T>>::insert(&sender, count, &account);
 			// Update the size of the list.
 			<AccountTrustedAccountListCount<T>>::insert(&sender, count + 1);
 			// Store index + 1 for this trust pair.
@@ -156,7 +141,7 @@ pub mod pallet {
 				// Overwrite the account being untrusted with the last account.
 				<AccountTrustedAccountList<T>>::insert(&sender, i - 1, &moving_account);
 				// Update the index + 1 of the last account.
-				<AccountTrustedAccountIndex<T>>::insert(&sender, moving_account.account_id.unwrap(), i);
+				<AccountTrustedAccountIndex<T>>::insert(&sender,  moving_account, i);
 			}
 			// Remove the last account.
 			<AccountTrustedAccountList<T>>::remove(&sender, count - 1);
@@ -177,7 +162,7 @@ pub mod pallet {
 			let count = AccountTrustedAccountListCount::<T>::get(&account);
 			let mut i = 0;
 			while i < count {
-				if AccountTrustedAccountIndex::<T>::contains_key(AccountTrustedAccountList::<T>::get(&account, i).unwrap().account_id.unwrap(), &trustee) {
+				if AccountTrustedAccountIndex::<T>::contains_key(AccountTrustedAccountList::<T>::get(&account, i).unwrap(), &trustee) {
 					return true;
 				}
 
@@ -202,7 +187,7 @@ pub mod pallet {
 
 			let mut i = 0;
 			while i < count {
-				accounts.push(AccountTrustedAccountList::<T>::get(&account, i).unwrap().account_id.unwrap());
+				accounts.push(AccountTrustedAccountList::<T>::get(&account, i).unwrap());
 				i = i + 1;
 			}
 
