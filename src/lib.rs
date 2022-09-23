@@ -49,7 +49,8 @@ pub mod pallet {
 	pub type AccountTrustedAccountListCount<T: Config> = StorageMap<_,
 		Blake2_128Concat, T::AccountId,
 		u32,
-		ValueQuery>;
+		ValueQuery
+	>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn account_trusted_account_list)]
@@ -58,16 +59,16 @@ pub mod pallet {
 		Blake2_128Concat, T::AccountId,
 		Blake2_128Concat, u32,
 		Account<T::AccountId>,
-		ValueQuery>;
+	>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn account_trusted_account_index)]
-	// Mapping of account1 to mapping of account2 to index + 1 in accountTrustedAccountList.
+	// Mapping of account1 to mapping of account2 to index + 1 in AccountTrustedAccountList.
 	pub type AccountTrustedAccountIndex<T: Config> = StorageDoubleMap<_,
 		Blake2_128Concat, T::AccountId,
 		Blake2_128Concat, T::AccountId,
 		u32,
-		ValueQuery>;
+	>;
 
 	// Pallets use events to inform users when important changes are made.
 	// https://docs.substrate.io/v3/runtime/events-and-errors
@@ -108,7 +109,7 @@ pub mod pallet {
 				Err(Error::<T>::TrustSelf)?;
 			}
 			// Check that the account is not already trusted.
-			if <AccountTrustedAccountIndex<T>>::get(&sender, &account) != 0 {
+			if <AccountTrustedAccountIndex<T>>::contains_key(&sender, &account) {
 				Err(Error::<T>::AlreadyTrusted)?;
 			}
 			// Get the total number of accounts the sender already trusts.
@@ -137,11 +138,10 @@ pub mod pallet {
 			// https://docs.substrate.io/v3/runtime/origins
 			let sender = ensure_signed(origin)?;
 			// Get the index + 1 of the account to be removed
-			let i = <AccountTrustedAccountIndex<T>>::get(&sender, &account);
-			// Check the account is trusted.
-			if i == 0 {
-				Err(Error::<T>::NotTrusted)?;
-			}
+			let i = match <AccountTrustedAccountIndex<T>>::get(&sender, &account) {
+                Some(i) => i,
+                None => return Err(Error::<T>::NotTrusted.into()),
+            };
 
 			//----------------------------------------
 
@@ -152,7 +152,7 @@ pub mod pallet {
 			// Check if this is not the last account.
 			if i != count {
 				// Get the last account.
-				let moving_account = <AccountTrustedAccountList<T>>::get(&sender, count - 1);
+				let moving_account = <AccountTrustedAccountList<T>>::get(&sender, count - 1).unwrap();
 				// Overwrite the account being untrusted with the last account.
 				<AccountTrustedAccountList<T>>::insert(&sender, i - 1, &moving_account);
 				// Update the index + 1 of the last account.
@@ -170,14 +170,14 @@ pub mod pallet {
 
 	impl<T: Config> Pallet<T> {
 		pub fn is_trusted(account: T::AccountId, trustee: T::AccountId) -> bool {
-			AccountTrustedAccountIndex::<T>::get(&account, &trustee) != 0
+			AccountTrustedAccountIndex::<T>::contains_key(&account, &trustee)
 		}
 
 		pub fn is_trusted_only_deep(account: T::AccountId, trustee: T::AccountId) -> bool {
 			let count = AccountTrustedAccountListCount::<T>::get(&account);
 			let mut i = 0;
 			while i < count {
-				if AccountTrustedAccountIndex::<T>::get(AccountTrustedAccountList::<T>::get(&account, i).account_id.unwrap(), &trustee) != 0 {
+				if AccountTrustedAccountIndex::<T>::contains_key(AccountTrustedAccountList::<T>::get(&account, i).unwrap().account_id.unwrap(), &trustee) {
 					return true;
 				}
 
@@ -189,7 +189,7 @@ pub mod pallet {
 
 		pub fn is_trusted_deep(account: T::AccountId, trustee: T::AccountId) -> bool {
 
-			if AccountTrustedAccountIndex::<T>::get(&account, &trustee) != 0 {
+			if AccountTrustedAccountIndex::<T>::contains_key(&account, &trustee) {
 				return true;
 			}
 
@@ -202,7 +202,7 @@ pub mod pallet {
 
 			let mut i = 0;
 			while i < count {
-				accounts.push(AccountTrustedAccountList::<T>::get(&account, i).account_id.unwrap());
+				accounts.push(AccountTrustedAccountList::<T>::get(&account, i).unwrap().account_id.unwrap());
 				i = i + 1;
 			}
 
