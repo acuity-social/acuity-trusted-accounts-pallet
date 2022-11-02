@@ -33,9 +33,8 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn account_trusted_account_list_count)]
 	// Mapping of account to count of accounts that it trusts.
-	/// TWOX-NOTE: OK ― `AccountId` is a secure hash.
 	pub type AccountTrustedAccountListCount<T: Config> = StorageMap<_,
-		Twox64Concat, T::AccountId,
+		Identity, T::AccountId,
 		u32,
 		ValueQuery
 	>;
@@ -43,19 +42,17 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn account_trusted_account_list)]
 	// Mapping of account to array of trusted accounts.
-	/// TWOX-NOTE: OK ― `AccountId` is a secure hash.
 	pub type AccountTrustedAccountList<T: Config> = StorageDoubleMap<_,
-		Twox64Concat, T::AccountId,
-		Blake2_128Concat, u32,
+		Identity, T::AccountId,
+		Twox64Concat, u32,
 		T::AccountId,
 	>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn account_trusted_account_index)]
 	// Mapping of account1 to mapping of account2 to index + 1 in AccountTrustedAccountList.
-	/// TWOX-NOTE: OK ― `AccountId` is a secure hash.
 	pub type AccountTrustedAccountIndex<T: Config> = StorageDoubleMap<_,
-		Twox64Concat, T::AccountId,
+		Identity, T::AccountId,
 		Blake2_128Concat, T::AccountId,
 		u32,
 	>;
