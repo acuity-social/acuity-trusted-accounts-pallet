@@ -85,6 +85,7 @@ pub mod pallet {
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
 
+		#[pallet::call_index(0)]
 		#[pallet::weight(10_000)]
 		pub fn trust_account(origin: OriginFor<T>, account: T::AccountId) -> DispatchResult {
 			// Check that the extrinsic was signed and get the signer.
@@ -116,6 +117,7 @@ pub mod pallet {
 			Ok(())
 		}
 
+		#[pallet::call_index(1)]
 		#[pallet::weight(10_000)]
 		pub fn untrust_account(origin: OriginFor<T>, account: T::AccountId) -> DispatchResult {
 			// Check that the extrinsic was signed and get the signer.

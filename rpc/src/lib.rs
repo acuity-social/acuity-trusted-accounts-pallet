@@ -1,13 +1,12 @@
 use codec::Codec;
 use jsonrpsee::{
-	core::{async_trait, RpcResult},
+	core::RpcResult,
 	proc_macros::rpc,
 	types::error::{CallError, ErrorObject},
 };
 use sp_api::ProvideRuntimeApi;
 use sp_blockchain::HeaderBackend;
 use sp_runtime::{
-	generic::BlockId,
 	traits::Block as BlockT,
 };
 
@@ -61,7 +60,6 @@ impl From<Error> for i32 {
 	}
 }
 
-#[async_trait]
 impl<C, AccountId, Block>
 	TrustedAccountsApiServer<AccountId, <Block as BlockT>::Hash>
 	for TrustedAccounts<C, Block>
@@ -79,13 +77,10 @@ where
         trustee: AccountId,
         at: Option<<Block as BlockT>::Hash>,
     ) -> RpcResult<bool> {
-    	let api = self.client.runtime_api();
-        let at = BlockId::hash(at.unwrap_or_else(||
-            // If the block hash is not supplied assume the best block.
-            self.client.info().best_hash
-        ));
+        let api = self.client.runtime_api();
+		let at_hash = at.unwrap_or_else(|| self.client.info().best_hash);
 
-		api.is_trusted(&at, account, trustee).map_err(|e| {
+		api.is_trusted(at_hash, account, trustee).map_err(|e| {
 			CallError::Custom(ErrorObject::owned(
 				Error::RuntimeError.into(),
 				"Unable to query dispatch info.",
@@ -101,20 +96,17 @@ where
         trustee: AccountId,
         at: Option<<Block as BlockT>::Hash>,
     ) -> RpcResult<bool> {
-    	let api = self.client.runtime_api();
-        let at = BlockId::hash(at.unwrap_or_else(||
-            // If the block hash is not supplied assume the best block.
-            self.client.info().best_hash
-        ));
+       	let api = self.client.runtime_api();
+		let at_hash = at.unwrap_or_else(|| self.client.info().best_hash);
 
-    	api.is_trusted_only_deep(&at, account, trustee).map_err(|e| {
+        	api.is_trusted_only_deep(at_hash, account, trustee).map_err(|e| {
 			CallError::Custom(ErrorObject::owned(
 				Error::RuntimeError.into(),
 				"Unable to query dispatch info.",
 				Some(e.to_string()),
 			))
 			.into()
-    	})
+        	})
 	}
 
 	fn is_trusted_deep(
@@ -123,21 +115,17 @@ where
         trustee: AccountId,
         at: Option<<Block as BlockT>::Hash>,
     ) -> RpcResult<bool> {
+        	let api = self.client.runtime_api();
+		let at_hash = at.unwrap_or_else(|| self.client.info().best_hash);
 
-    	let api = self.client.runtime_api();
-        let at = BlockId::hash(at.unwrap_or_else(||
-            // If the block hash is not supplied assume the best block.
-            self.client.info().best_hash
-        ));
-
-    	api.is_trusted_deep(&at, account, trustee).map_err(|e| {
+        api.is_trusted_deep(at_hash, account, trustee).map_err(|e| {
 			CallError::Custom(ErrorObject::owned(
 				Error::RuntimeError.into(),
 				"Unable to query dispatch info.",
 				Some(e.to_string()),
 			))
 			.into()
-    	})
+        	})
 	}
 
 	fn trusted_by(
@@ -145,20 +133,17 @@ where
         account: AccountId,
         at: Option<<Block as BlockT>::Hash>,
     ) -> RpcResult<Vec<AccountId>> {
-    	let api = self.client.runtime_api();
-        let at = BlockId::hash(at.unwrap_or_else(||
-            // If the block hash is not supplied assume the best block.
-            self.client.info().best_hash
-        ));
+        	let api = self.client.runtime_api();
+		let at_hash = at.unwrap_or_else(|| self.client.info().best_hash);
 
-    	api.trusted_by(&at, account).map_err(|e| {
+        	api.trusted_by(at_hash, account).map_err(|e| {
 			CallError::Custom(ErrorObject::owned(
 				Error::RuntimeError.into(),
 				"Unable to query dispatch info.",
 				Some(e.to_string()),
 			))
 			.into()
-    	})
+        	})
 	}
 
 	fn trusted_by_that_trust(
@@ -167,19 +152,16 @@ where
         account_is_trusted_by_trusted: AccountId,
         at: Option<<Block as BlockT>::Hash>,
     ) -> RpcResult<Vec<AccountId>> {
-    	let api = self.client.runtime_api();
-        let at = BlockId::hash(at.unwrap_or_else(||
-            // If the block hash is not supplied assume the best block.
-            self.client.info().best_hash
-        ));
+        	let api = self.client.runtime_api();
+		let at_hash = at.unwrap_or_else(|| self.client.info().best_hash);
 
-    	api.trusted_by_that_trust(&at, account, account_is_trusted_by_trusted).map_err(|e| {
+        	api.trusted_by_that_trust(at_hash, account, account_is_trusted_by_trusted).map_err(|e| {
 			CallError::Custom(ErrorObject::owned(
 				Error::RuntimeError.into(),
 				"Unable to query dispatch info.",
 				Some(e.to_string()),
 			))
 			.into()
-    	})
+        	})
 	}
 }
