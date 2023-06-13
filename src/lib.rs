@@ -162,7 +162,7 @@ pub mod pallet {
                     return true;
                 }
 
-                i = i + 1;
+                i += 1;
             }
 
             false
@@ -183,7 +183,7 @@ pub mod pallet {
             let mut i = 0;
             while i < count {
                 accounts.push(AccountTrustedAccountList::<T>::get(&account, i).unwrap());
-                i = i + 1;
+                i += 1;
             }
 
             accounts
